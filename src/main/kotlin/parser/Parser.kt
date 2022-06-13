@@ -1,6 +1,13 @@
 package parser
 
 import kotlin.reflect.KProperty
+import kotlin.reflect.full.findAnnotation
+
+@Target(AnnotationTarget.PROPERTY)
+annotation class Ex
+
+@Target(AnnotationTarget.PROPERTY)
+annotation class Name(val name: String)
 
 /**
  * over loading
@@ -23,8 +30,9 @@ private fun <T : Any> StringBuilder.jsonObject(target: T) {
     wrap(begin = '{', end = '}') {
         target::class.members
             .filterIsInstance<KProperty<*>>()
+            .filter { it.findAnnotation<Ex>() == null }
             .joinTo(::comma) {
-                jsonValue(it.name)
+                jsonValue(it.findAnnotation<Name>()?.name ?: it.name)
                 append(" : ")
                 jsonValue(it.getter.call(target))
             }
@@ -63,7 +71,7 @@ private fun StringBuilder.jsonString(v: String) {
     append(""""${v.replace("\"", "\\\"")}"""")
 }
 
-class Json0(val a: Int, val b: String, val c: List<Int>)
+class Json0(val a: Int, @Name("name") val b: String, val c: List<Int>)
 
 fun main() {
     println(stringify(Json0(0, "roach", listOf(1, 2, 3))))
