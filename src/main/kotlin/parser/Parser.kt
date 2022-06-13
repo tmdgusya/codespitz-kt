@@ -12,11 +12,21 @@ fun <T : Any> jsonObject(target: T): String {
             .filterIsInstance<KProperty<*>>()
             .joinTo(buffer = this, separator = ", ", prefix = "{", postfix = "}") {
                 val value = it.getter.call(target) // call 은 java reflection 의 invoke 를 생각하면 됨.
-                "${jsonString(it.name)} : ${if (value is String) jsonString(value) else value}"
+                "${jsonString(it.name)} : ${when (value) {
+                    null -> "null"
+                    is String -> jsonString(value)
+                    is Boolean, is Number -> value.toString()
+                    is List<*> -> jsonList(value)
+                    else -> jsonObject(value)
+                }}"
             }
     }
 
     return builder
+}
+
+fun jsonList(target: List<*>): String {
+    return ""
 }
 
 private fun jsonString(v: String) = """"${v.replace("\"", "\\\"")}""""
