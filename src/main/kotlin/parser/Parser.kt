@@ -3,10 +3,10 @@ package parser
 import kotlin.reflect.KProperty
 
 fun <T : Any> stringify(target: T): String {
-    return jsonObjcet(target)
+    return jsonObject(target)
 }
 
-fun <T : Any> jsonObjcet(target: T): String {
+fun <T : Any> jsonObject(target: T): String {
     val builder = buildString {
         target::class.members
             .filterIsInstance<KProperty<*>>()
