@@ -17,38 +17,38 @@ fun <T> Iterable<T>.joinTo(
 
 fun stringify(value: Any?): String {
     val builder = StringBuilder()
-    jsonValue(value, builder)
+    builder.jsonValue(value)
     return builder.toString()
 }
 
-private fun <T : Any> jsonObject(target: T, builder: StringBuilder) {
-    builder.append("{")
+private fun <T : Any> StringBuilder.jsonObject(target: T) {
+    append("{")
     target::class.members
         .filterIsInstance<KProperty<*>>()
-        .joinTo({ builder.append(", ") }) {
-            jsonValue(it.name, builder)
-            builder.append(" : ")
-            jsonValue(it.getter.call(target), builder)
+        .joinTo({ append(", ") }) {
+            jsonValue(it.name)
+            append(" : ")
+            jsonValue(it.getter.call(target))
         }
-    builder.append("}")
+    append("}")
 }
 
-private fun jsonValue(value: Any?, builder: StringBuilder) {
+fun StringBuilder.jsonValue(value: Any?) {
     when (value) {
-        null -> builder.append("null")
-        is String -> jsonString(value, builder)
-        is Boolean, is Number -> builder.append(value.toString())
-        is List<*> -> jsonList(value, builder)
-        else -> jsonObject(value, builder)
+        null -> append("null")
+        is String -> jsonString(value)
+        is Boolean, is Number -> append(value.toString())
+        is List<*> -> jsonList(value)
+        else -> jsonObject(value)
     }
 }
 
-private fun jsonList(target: List<*>, builder: StringBuilder) {
-    target.joinTo(buffer = builder, separator = ", ", prefix = "[", postfix = "]", transform = ::stringify)
+fun StringBuilder.jsonList(target: List<*>) {
+    target.joinTo(buffer = this, separator = ", ", prefix = "[", postfix = "]", transform = ::stringify)
 }
 
-private fun jsonString(v: String, builder: StringBuilder) {
-    builder.append(""""${v.replace("\"", "\\\"")}"""")
+fun StringBuilder.jsonString(v: String) {
+    append(""""${v.replace("\"", "\\\"")}"""")
 }
 
 class Json0(val a: Int, val b: String, val c: List<Int>)
