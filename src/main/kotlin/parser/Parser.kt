@@ -2,35 +2,54 @@ package parser
 
 import kotlin.reflect.KProperty
 
-fun <T : Any> jsonObject(target: T): String {
-    val builder = buildString {
-        target::class.members
-            .filterIsInstance<KProperty<*>>()
-            .joinTo(buffer = this, separator = ", ", prefix = "{", postfix = "}") {
-                "${stringify(it.name)} : ${stringify(it.getter.call(target))}"
-            }
+/**
+ * over loading
+ */
+fun <T> Iterable<T>.joinTo(
+    sep: () -> Unit,
+    transform: (T) -> Unit,
+) {
+    forEachIndexed { count, element ->
+        if (count != 0) sep() // 첫번째가 아닐때만 separator 를 부르면 됨.
+        transform(element)
     }
-
-    return builder
 }
 
-private fun stringify(value: Any?) = when (value) {
-    null -> "null"
-    is String -> jsonString(value)
-    is Boolean, is Number -> value.toString()
-    is List<*> -> jsonList(value)
-    else -> jsonObject(value)
+fun stringify(value: Any?): String {
+    val builder = StringBuilder()
+    jsonValue(value, builder)
+    return builder.toString()
 }
 
-fun jsonList(target: List<*>): String {
-    val builder = buildString {
-        target.joinTo(buffer = this, separator = ", ", prefix = "[", postfix = "]", transform = ::stringify)
+private fun <T : Any> jsonObject(target: T, builder: StringBuilder) {
+    builder.append("{")
+    target::class.members
+        .filterIsInstance<KProperty<*>>()
+        .joinTo({ builder.append(", ") }) {
+            jsonValue(it.name, builder)
+            builder.append(" : ")
+            jsonValue(it.getter.call(target), builder)
+        }
+    builder.append("}")
+}
+
+private fun jsonValue(value: Any?, builder: StringBuilder) {
+    when (value) {
+        null -> builder.append("null")
+        is String -> jsonString(value, builder)
+        is Boolean, is Number -> builder.append(value.toString())
+        is List<*> -> jsonList(value, builder)
+        else -> jsonObject(value, builder)
     }
-
-    return builder
 }
 
-private fun jsonString(v: String) = """"${v.replace("\"", "\\\"")}""""
+private fun jsonList(target: List<*>, builder: StringBuilder) {
+    target.joinTo(buffer = builder, separator = ", ", prefix = "[", postfix = "]", transform = ::stringify)
+}
+
+private fun jsonString(v: String, builder: StringBuilder) {
+    builder.append(""""${v.replace("\"", "\\\"")}"""")
+}
 
 class Json0(val a: Int, val b: String, val c: List<Int>)
 
