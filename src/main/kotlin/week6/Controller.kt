@@ -7,11 +7,11 @@ class Controller internal constructor(
 
     fun cancel(throwable: Throwable) {
         task.next?.result = Result.failure(throwable)
-        task.isCompleted = true
+        task.isCompleted = Stat.MARK
     }
 
     fun resume(data: Any? = null) {
         task.next?.result = Result.success(data)
-        task.isCompleted = true
+        task.isCompleted = Stat.MARK
     }
 }

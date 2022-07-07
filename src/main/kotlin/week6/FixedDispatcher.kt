@@ -8,9 +8,7 @@ class FixedDispatcher(
     private val executor = Executors.newFixedThreadPool(threads)
 
     override fun start(looper: EventLooper) {
-        for (i in 1..threads) {
-            executor.execute(looper)
-        }
+        executor.execute(looper)
     }
 
     override fun join() {

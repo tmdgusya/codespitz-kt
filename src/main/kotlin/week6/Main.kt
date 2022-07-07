@@ -1,7 +1,7 @@
 package week6
 
 fun main() {
-    val looper = EventLooper(FixedDispatcher(10))
+    val looper = EventLooperImpl(FixedDispatcher(10))
 
     for (i in 0..5) {
         looper.linkedTask({
